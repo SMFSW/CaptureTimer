@@ -1,0 +1,28 @@
+#######################################
+# Syntax Coloring Map For CaptureTimer
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+CaptureTimer	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+init	KEYWORD2
+setPeriod	KEYWORD2
+getPulses	KEYWORD2
+getScaledPulses	KEYWORD2
+getFreq	KEYWORD2
+getPeriod	KEYWORD2
+isDataReady	KEYWORD2
+xgetPulses	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################

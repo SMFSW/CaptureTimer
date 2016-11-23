@@ -1,0 +1,14 @@
+Arduino Input Capture Library
+2016-2016 SMFSW
+
+Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
+	- issues encountered
+	- optimisations
+	- improvements & new functionalities
+
+------------
+
+** Actual:
+
+v0.1	2x November 2016:
+- First release
