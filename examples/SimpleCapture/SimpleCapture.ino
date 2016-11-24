@@ -5,12 +5,13 @@
 	This example code is in the public domain.
 
 	created 22 November 2016
+	latest mod 24 November 2016
 	by SMSFSW
 */
 
 #include <CaptureTimer.h>
 
-#define ctINPin			2		// Pin used for Input Capture (pulses count)
+#define ctINPin			2		// Pin used for Input Capture (ticks count)
 
 #define samplingPer		50
 
@@ -25,15 +26,15 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-	uint16_t pulses;
+	uint16_t ticks;
 
-	if (CaptureTimer::getPulses(&pulses) == true)
+	if (CaptureTimer::getTicks(&ticks) == true)
 	{	// Only print on serial if new datas are available
-		Serial.print("Pulses: ");
-		Serial.print(pulses);
+		Serial.print("Ticks: ");
+		Serial.print(ticks);
 		Serial.print("\tFreq: ");
-		(void) CaptureTimer::getFreq(&pulses);
-		Serial.print(pulses);
+		(void) CaptureTimer::getFreq(&ticks);
+		Serial.print(ticks);
 		Serial.println("Hz");
 	}
 	

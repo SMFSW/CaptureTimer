@@ -1,6 +1,6 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.1
+** \version v0.2
 ** \date 2015-2015
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
@@ -35,9 +35,9 @@
 **/
 typedef volatile struct StructCap{
 		uint16_t	perAcq;			//!< acquisition period (in ms)
-		uint16_t	cnt;			//!< pulses counter
-		uint16_t	pulsesData;		//!< pulses in the last acquired time window
-		boolean		dataReady;		//!< true is pulsesData has been updated since last read
+		uint16_t	cnt;			//!< ticks counter
+		uint16_t	ticksData;		//!< number of ticks in the last acquired time window
+		boolean		dataReady;		//!< true is ticksData has been updated since last read
 } capture;
 
 /*!	\namespace CaptureTimer CaptureTimer.h "CaptureTimer/CaptureTimer.h"
@@ -47,17 +47,17 @@ namespace CaptureTimer
 {
 	extern capture _cap;	//!< Capture struct instance
 
-	/*!	\brief Pin Change interrupt handler
-	**	\isr Pin Change interrupt handler
+	/*!	\brief Tick trigger interrupt handler
+	**	\isr Tick trigger interrupt handler
 	**	\return nothing
 	**/
-	void isrIncPulses();
+	void isrTick_event();
 
 	/*!	\brief Sampling Timer handler
 	**	\isr Sampling Timer handler
 	**	\return nothing
 	**/
-	void isrGetPulses();
+	void isrTick_timer();
 
 	/*!	\brief Initialisation routine
 	**	\param [in] pin - pin for input capture
@@ -73,21 +73,21 @@ namespace CaptureTimer
 	**/
 	void setPeriod(uint16_t per);
 	
-	/*!	\brief Get pulses count (with dataReady flag set up)
-	**	\note if flag cap.dataReady doesn't need to be updated, use xgetPulses() instead
-	**	\param [in, out] res - pointer to result of previous acquisition pulses count (uint16 type)
+	/*!	\brief Get ticks count (with dataReady flag set up)
+	**	\note if flag cap.dataReady doesn't need to be updated, use xgetTicks() instead
+	**	\param [in, out] res - pointer to result of previous acquisition ticks count (uint16 type)
 	**	\retval true - new data acquired
 	**	\retval false - no new data (new sample pending)
 	**/
-	boolean getPulses(uint16_t * res);
+	boolean getTicks(uint16_t * res);
 	
-	/*!	\brief Get pulses count SCALED (with dataReady flag set up)
-	**	\param [in, out] res - pointer to result of previous acquisition scaled pulses count (uint16 type)
+	/*!	\brief Get ticks count SCALED (with dataReady flag set up)
+	**	\param [in, out] res - pointer to result of previous acquisition scaled ticks count (uint16 type)
 	**	\param [in] scl - result scale
 	**	\retval true - new data acquired
 	**	\retval false - no new data (new sample pending)
 	**/
-	boolean getScaledPulses(uint16_t * res, const float scl);
+	boolean getScaledTicks(uint16_t * res, const float scl);
 	
 	/*!	\brief Get Frequency (with dataReady flag set up)
 	**	\param [in, out] res - pointer to result of previous acquisition Frequency (uint16 type)
@@ -106,11 +106,11 @@ namespace CaptureTimer
 	**/
 	boolean isDataReady();
 	
-	/*!	\brief Get pulses count (without dataReady flag set up)
+	/*!	\brief Get ticks count (without dataReady flag set up)
 	**	\warning this inline doesn't update flag cap.dataReady
-	**	\return Previous acquisition pulses count on uint16 type
+	**	\return Previous acquisition ticks count on uint16 type
 	**/
-	uint16_t xgetPulses();
+	uint16_t xgetTicks();
 }
 
 #endif /* CaptureTimer_h */

@@ -12,12 +12,12 @@ CaptureTimer	KEYWORD1
 #######################################
 init	KEYWORD2
 setPeriod	KEYWORD2
-getPulses	KEYWORD2
-getScaledPulses	KEYWORD2
+getTicks	KEYWORD2
+getScaledTicks	KEYWORD2
 getFreq	KEYWORD2
 getPeriod	KEYWORD2
 isDataReady	KEYWORD2
-xgetPulses	KEYWORD2
+xgetTicks	KEYWORD2
 
 #######################################
 # Instances (KEYWORD2)

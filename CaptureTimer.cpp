@@ -1,6 +1,6 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.1
+** \version v0.2
 ** \date 2015-2015
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
@@ -57,14 +57,14 @@ void CaptureTimer::init(uint8_t pin, uint16_t per, uint8_t edge)
 {
 	_cap.perAcq = per;
 
-	pinMode(pin, INPUT_PULLUP);											// pulses counter pin set mode
-	attachInterrupt(digitalPinToInterrupt(pin), isrIncPulses, edge);	// pulses counter interrupt pin
+	pinMode(pin, INPUT_PULLUP);											// ticks counter pin set mode
+	attachInterrupt(digitalPinToInterrupt(pin), isrTick_event, edge);	// ticks counter interrupt pin
 	#ifdef __AVR__
-		MsTimer2::set(_cap.perAcq, isrGetPulses);						// pulses counter timer set period & callback
-		MsTimer2::start();												// pulses counter timer start
+		MsTimer2::set(_cap.perAcq, isrTick_timer);						// ticks counter timer set period & callback
+		MsTimer2::start();												// ticks counter timer start
 	#else
-		Timer0.attachInterrupt(isrGetPulses);							// pulses counter timer set callback
-		Timer0.start(_cap.perAcq * 1000);								// pulses counter timer set period & start
+		Timer0.attachInterrupt(isrTick_timer);							// ticks counter timer set callback
+		Timer0.start(_cap.perAcq * 1000);								// ticks counter timer set period & start
 	#endif
 }
 
@@ -73,35 +73,35 @@ void CaptureTimer::setPeriod(uint16_t per)
 	_cap.perAcq = per;
 
 	#ifdef __AVR__
-		MsTimer2::stop();							// pulses counter timer stop
-		MsTimer2::set(_cap.perAcq, isrGetPulses);	// pulses counter timer set new period & callback
-		MsTimer2::start();							// pulses counter timer restart
+		MsTimer2::stop();							// ticks counter timer stop
+		MsTimer2::set(_cap.perAcq, isrTick_timer);	// ticks counter timer set new period & callback
+		MsTimer2::start();							// ticks counter timer restart
 	#else
-		Timer0.stop();								// pulses counter timer stop
-		Timer0.start(_cap.perAcq * 1000);			// pulses counter timer set new period & restart
+		Timer0.stop();								// ticks counter timer stop
+		Timer0.start(_cap.perAcq * 1000);			// ticks counter timer set new period & restart
 	#endif
 }
 
-boolean CaptureTimer::getPulses(uint16_t * res)
+boolean CaptureTimer::getTicks(uint16_t * res)
 {
-	boolean mem = _cap.dataReady;	// memorize if new datas is to be returned
-	*res = _cap.pulsesData;			// write pulses count
+	boolean mem = _cap.dataReady;	// memorize if new data is to be returned
+	*res = _cap.ticksData;			// write ticks count
 	_cap.dataReady = false;			// erase ISR flag
 	return mem;
 }
 
-boolean CaptureTimer::getScaledPulses(uint16_t * res, const float scl)
+boolean CaptureTimer::getScaledTicks(uint16_t * res, const float scl)
 {
 	float time_coef = scl / (float) _cap.perAcq;				// determine coefficient based on sampling time
 	boolean mem = _cap.dataReady;								// memorize if new datas is to be returned
-	*res = (uint16_t) ((float) _cap.pulsesData * time_coef);	// write scaled pulses count
+	*res = (uint16_t) ((float) _cap.ticksData * time_coef);		// write scaled ticks count
 	_cap.dataReady = false;										// erase ISR flag
 	return mem;
 }
 
 boolean CaptureTimer::getFreq(uint16_t * res)
 {
-	return getScaledPulses(res, 1000.0f);	// call getScaledPulses with a 1000ms time basis (means get Frequency)
+	return getScaledTicks(res, 1000.0f);	// call getScaledTicks with a 1000ms time basis (means get Frequency)
 }
 
 
@@ -115,21 +115,21 @@ boolean CaptureTimer::isDataReady()
 	return _cap.dataReady;	// get dataReady flag from capture struct
 }
 
-uint16_t CaptureTimer::xgetPulses()
+uint16_t CaptureTimer::xgetTicks()
 {
-	return _cap.pulsesData;	// get pulses count from capture struct
+	return _cap.ticksData;	// get ticks count from capture struct
 }
 
 
-void CaptureTimer::isrIncPulses()
+void CaptureTimer::isrTick_event()
 {
-	_cap.cnt++;	// increase events count
+	_cap.cnt++;	// increase ticks count
 }
 
-void CaptureTimer::isrGetPulses()
+void CaptureTimer::isrTick_timer()
 {
-	_cap.pulsesData = _cap.cnt;	// store pulses count
-	_cap.cnt = 0;				// reset pulses counter
+	_cap.ticksData = _cap.cnt;	// store ticks count for the time window
+	_cap.cnt = 0;				// reset ticks counter
 	_cap.dataReady = true;		// raise ISR flag
 }
 

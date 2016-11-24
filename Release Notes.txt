@@ -10,5 +10,8 @@ Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
 
 ** Actual:
 
-v0.1	2x November 2016:
+v0.2	24 Nov 2016:
+- Refactoring for good
+
+v0.1	23 Nov 2016:
 - First release
