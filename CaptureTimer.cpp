@@ -1,6 +1,6 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.2
+** \version v0.3
 ** \date 2015-2015
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
@@ -42,8 +42,8 @@
 #elif defined(__AVR__)
 	#include <MsTimer2.h>
 #elif defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ESP8266_ESP01)
-	// TODO: find appropriate timer library for ESP8266
-	#error "ESP8266 not yet implemented"
+	#include "user_interface.h"
+	os_timer_t TimerESP;
 #else
 	#error "Unknown architecture"
 #endif
@@ -57,14 +57,17 @@ void CaptureTimer::init(uint8_t pin, uint16_t per, uint8_t edge)
 {
 	_cap.perAcq = per;
 
-	pinMode(pin, INPUT_PULLUP);											// ticks counter pin set mode
-	attachInterrupt(digitalPinToInterrupt(pin), isrTick_event, edge);	// ticks counter interrupt pin
-	#ifdef __AVR__
-		MsTimer2::set(_cap.perAcq, isrTick_timer);						// ticks counter timer set period & callback
-		MsTimer2::start();												// ticks counter timer start
+	pinMode(pin, INPUT_PULLUP);												// ticks counter pin set mode
+	attachInterrupt(digitalPinToInterrupt(pin), isrTick_event, edge);		// ticks counter interrupt pin
+	#if defined(__AVR__)
+		MsTimer2::set(_cap.perAcq, isrTick_timer);							// ticks counter timer set period & callback
+		MsTimer2::start();													// ticks counter timer start
+	#elif defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ESP8266_ESP01)
+		os_timer_setfn(&TimerESP, (void (*)(void*)) isrTick_timer, NULL);	// ticks counter timer set callback
+		os_timer_arm(&TimerESP, _cap.perAcq, true);							// ticks counter timer set period & auto restart
 	#else
-		Timer0.attachInterrupt(isrTick_timer);							// ticks counter timer set callback
-		Timer0.start(_cap.perAcq * 1000);								// ticks counter timer set period & start
+		Timer0.attachInterrupt(isrTick_timer);								// ticks counter timer set callback
+		Timer0.start(_cap.perAcq * 1000);									// ticks counter timer set period & start
 	#endif
 }
 
@@ -72,10 +75,14 @@ void CaptureTimer::setPeriod(uint16_t per)
 {
 	_cap.perAcq = per;
 
-	#ifdef __AVR__
+	#if defined(__AVR__)
 		MsTimer2::stop();							// ticks counter timer stop
 		MsTimer2::set(_cap.perAcq, isrTick_timer);	// ticks counter timer set new period & callback
 		MsTimer2::start();							// ticks counter timer restart
+	#elif defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ESP8266_ESP01)
+		os_timer_disarm(&TimerESP);
+		os_timer_setfn(&TimerESP, (void (*)(void*)) isrTick_timer, NULL);
+		os_timer_arm(&TimerESP, _cap.perAcq, true);
 	#else
 		Timer0.stop();								// ticks counter timer stop
 		Timer0.start(_cap.perAcq * 1000);			// ticks counter timer set new period & restart

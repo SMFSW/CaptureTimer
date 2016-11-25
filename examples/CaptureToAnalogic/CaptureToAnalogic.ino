@@ -6,7 +6,7 @@
 	This example code is in the public domain.
 
 	created 24 November 2016
-	latest mod 24 November 2016
+	latest mod 25 November 2016
 	by SMSFSW
 */
 
@@ -17,10 +17,12 @@
 
 #define maxTicks		1000		//!< maximum ticks expected in an acquisition window
 
-#ifdef __AVR__
-	#define outPin		3			//!< PWM output pin (on AVR: less interest, but demonstrates the use)
-#else
+#if defined (__arm__)
 	#define outPin		DAC0		//!< DAC output pin
+#elif defined (__AVR__)
+	#define outPin		6			//!< PWM output pin (less interest, but demonstrates the use)
+#else	// On ESP8266
+	#define outPin		D5			//!< PWM output pin (less interest, but demonstrates the use)
 #endif
 
 #define icINPin			2			//!< Pin used for Input Capture (ticks count)
@@ -33,14 +35,14 @@ uint16_t valDAC = 0;
 void setup()
 {
 	Serial.begin(115200);
-	while (!Serial);	// Waiting for Serial to be ready (only needed on particular boards)
+	while (!Serial);				// Waiting for Serial to be ready (only needed on particular boards)
 
 	CaptureTimer::init(icINPin, acqPeriod);
 
-	#ifndef __AVR__
+	#if defined(__arm__)
 		analogWriteResolution(12);	// set DAC resolution to 12 bits for higher accuracy
-	#else
-		maxDAC = 255;	// If on AVR, most probably using a PWM pin, resolution is 8bits
+	#elif defined(__AVR__)
+		maxDAC = 255;				// If on AVR, most probably using a PWM pin, resolution is 8bits
 	#endif
 }
 

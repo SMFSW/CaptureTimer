@@ -1,6 +1,6 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.2
+** \version v0.3
 ** \date 2015-2015
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library

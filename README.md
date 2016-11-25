@@ -5,7 +5,7 @@ This library is intended to attach interrupt on a pin for frequency sampling
 notes:
 use of MsTimer2 library for AVR architecture
 use of DueTimer library for SAM architecture: Timer0 (-> needs to be reworked if other arm core)
-use of NONE library for ESP8266 architecture (-> needs to be implemented)
+use of NONE library for ESP8266 architecture
 
 
 Usage: 
