@@ -10,6 +10,11 @@ Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
 
 ** Actual:
 
+v0.4	2x Nov 2016:
+- code generation optimisation using inlines
+- CaptureToAnlogic sketch updated to get a correct DAC/PWM resolution depending used core
+- added support for ATTiny chips (yet untested)
+
 v0.3	25 Nov 2016:
 - Added ESP8266 support
 

@@ -13,6 +13,7 @@ refer to Doxygen generated documentation & example sketches
 
 examples included:
 SimpleCapture.ino: Capture signal and show result on serial
+CaptureToAnalogic.ino: Capture signal and output scaled results to DAC / PWM (depending board ressources)
 
 Doxygen doc can be generated for the class using doxyfile
 

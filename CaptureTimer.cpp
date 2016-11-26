@@ -1,27 +1,27 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.3
-** \date 2015-2015
+** \version v0.4
+** \date 2016-2016
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
 ** \note use of MsTimer2 library for AVR architecture
 ** \note use of DueTimer library for SAM architecture: Timer0 (-> needs to be reworked if other arm core)
 ** \note use of NONE library for ESP8266 architecture (-> needs to be implemented)
 ** \details This library is intended to attach interrupt on a pin for frequency sampling
-			
+
 			Doxygen doc can be generated for the class using doxyfile
-			
+
 			Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
 				- issues encountered
 				- optimisations
 				- improvements & new functionalities
-			
-			
+
+
 			This library is free software; you can redistribute it and/or
 			modify it under the terms of the GNU Lesser General Public
 			License as published by the Free Software Foundation; either
 			version 2.1 of the License, or (at your option) any later version.
-			
+
 			This library is distributed in the hope that it will be useful,
 			but WITHOUT ANY WARRANTY; without even the implied warranty of
 			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,9 +39,17 @@
 #if defined(__arm__) && defined(ARDUINO_SAM_DUE)
 	// TODO: find appropriate ARM chip to select library (assume ARM is Due board yet)
 	#include <DueTimer.h>
+#elif defined(__AVR_ATtiny25__) | defined(__AVR_ATtiny45__) | defined(__AVR_ATtiny85__) | defined(__AVR_AT90Tiny26__) | defined(__AVR_ATtiny26__)
+	//#error "TINY needs to be implemented"
+
+	#define USEC_PER_TICK	1000							/* microseconds per clock interrupt tick */
+	#define CLK_IT_OVERHEAD	4								/* fudge factor for clock interrupt overhead */
+	#define PRESCALER		1024							/* timer clock prescaler */
+	#define CLKS_PER_USEC	(F_CPU / PRESCALER / 1000000)   /* timer clocks per microsecond */
+	#define INIT_TIMER		(256 - (USEC_PER_TICK * CLKS_PER_USEC) + CLK_IT_OVERHEAD)
 #elif defined(__AVR__)
 	#include <MsTimer2.h>
-#elif defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ESP8266_ESP01)
+#elif defined(ARDUINO_ARCH_ESP8266) | defined(ARDUINO_ESP8266_ESP01)
 	#include "user_interface.h"
 	os_timer_t TimerESP;
 #else
@@ -51,18 +59,54 @@
 
 #include "CaptureTimer.h"
 
-volatile capture CaptureTimer::_cap = {100, 0, 0, false};
+volatile capture CaptureTimer::_cap = { 0, 0, 0, 0, false };
 
-void CaptureTimer::init(uint8_t pin, uint16_t per, uint8_t edge)
+
+#if defined(__TINY__)
+/*!	\brief Initialisation of Tiny Timer
+**	\param [in] per - Period of the timer (assuming it represents milliseconds)
+**	\return nothing
+**/
+static void CaptureTimer::setTimerTiny(uint16_t per)
 {
 	_cap.perAcq = per;
 
-	pinMode(pin, INPUT_PULLUP);												// ticks counter pin set mode
-	attachInterrupt(digitalPinToInterrupt(pin), isrTick_event, edge);		// ticks counter interrupt pin
-	#if defined(__AVR__)
+	// setup Timer 1
+	cli();
+	TCCR1 = 0;		// normal mode
+	// Prescaler 1024 (16M/1024 = 64 microseconds per tick)
+	// timer interval can range from 64us to 128 microseconds
+	TCCR1 = /*CTC1 |*/ CS13 | CS11 | CS10;	// Auto reload
+	TCNT1 = INIT_TIMER;	// set to 1ms time basis
+	TIMSK |= TOIE1;	//Timer Overflow Interrupt Enable
+	sei();		// enable interrupts
+}
+#endif
+
+
+void CaptureTimer::init(uint16_t per, uint8_t pin, uint8_t edge)
+{
+	_cap.perAcq = per;
+
+	pinMode(pin, INPUT_PULLUP);													// ticks counter pin set mode
+
+	#if defined(__TINY__)
+		cli();
+		GIMSK = 0b00100000;		// turns on pin change interrupts
+		//PCMSK = 0b00010111;	// turn on interrupts on pins PB0, PB1, PB2 & PB4
+		PCMSK |= 1 << pin;		// turn on interrupts on pin
+		sei();
+	#else
+		attachInterrupt(digitalPinToInterrupt(pin), isrTick_event, edge);	// ticks counter interrupt pin
+	#endif
+
+	#if defined(__TINY__)
+		(void) edge;
+		setTimerTiny(_cap.perAcq);
+	#elif defined(__AVR__)
 		MsTimer2::set(_cap.perAcq, isrTick_timer);							// ticks counter timer set period & callback
 		MsTimer2::start();													// ticks counter timer start
-	#elif defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ESP8266_ESP01)
+	#elif defined(ARDUINO_ARCH_ESP8266) | defined(ARDUINO_ESP8266_ESP01)
 		os_timer_setfn(&TimerESP, (void (*)(void*)) isrTick_timer, NULL);	// ticks counter timer set callback
 		os_timer_arm(&TimerESP, _cap.perAcq, true);							// ticks counter timer set period & auto restart
 	#else
@@ -75,11 +119,13 @@ void CaptureTimer::setPeriod(uint16_t per)
 {
 	_cap.perAcq = per;
 
-	#if defined(__AVR__)
+	#if defined(__TINY__)
+		setTimerTiny(_cap.perAcq);
+	#elif defined(__AVR__)
 		MsTimer2::stop();							// ticks counter timer stop
 		MsTimer2::set(_cap.perAcq, isrTick_timer);	// ticks counter timer set new period & callback
 		MsTimer2::start();							// ticks counter timer restart
-	#elif defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ESP8266_ESP01)
+	#elif defined(ARDUINO_ARCH_ESP8266) | defined(ARDUINO_ESP8266_ESP01)
 		os_timer_disarm(&TimerESP);
 		os_timer_setfn(&TimerESP, (void (*)(void*)) isrTick_timer, NULL);
 		os_timer_arm(&TimerESP, _cap.perAcq, true);
@@ -106,33 +152,20 @@ boolean CaptureTimer::getScaledTicks(uint16_t * res, const float scl)
 	return mem;
 }
 
-boolean CaptureTimer::getFreq(uint16_t * res)
-{
-	return getScaledTicks(res, 1000.0f);	// call getScaledTicks with a 1000ms time basis (means get Frequency)
-}
 
+/*** Interrupt Service Routines ***/
 
-uint16_t CaptureTimer::getPeriod()
-{
-	return _cap.perAcq;	// get sampling period from capture struct
-}
-
-boolean CaptureTimer::isDataReady()
-{
-	return _cap.dataReady;	// get dataReady flag from capture struct
-}
-
-uint16_t CaptureTimer::xgetTicks()
-{
-	return _cap.ticksData;	// get ticks count from capture struct
-}
-
-
+#if defined(__TINY__)
+inline	// inlining isrTick_event on ATTiny to avoid call to function from isr
+#endif
 void CaptureTimer::isrTick_event()
 {
 	_cap.cnt++;	// increase ticks count
 }
 
+#if defined(__TINY__)
+inline	// inlining isrTick_timer on ATTiny to avoid call to function from isr
+#endif
 void CaptureTimer::isrTick_timer()
 {
 	_cap.ticksData = _cap.cnt;	// store ticks count for the time window
@@ -140,3 +173,32 @@ void CaptureTimer::isrTick_timer()
 	_cap.dataReady = true;		// raise ISR flag
 }
 
+#if defined(__TINY__)
+/*!	\brief Timer1 overflow ISR
+**	\isr Timer1 overflow handler
+**	\return nothing
+**/
+#if defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
+ISR(TIM1_OVF_vect)
+#else
+ISR(TIMER1_OVF_vect)
+#endif
+{
+	TCNT1 = INIT_TIMER;
+	if (++CaptureTimer::_cap.perCnt >= CaptureTimer::_cap.perAcq)
+	{
+		CaptureTimer::_cap.perCnt = 0;
+		CaptureTimer::isrTick_timer();
+	}
+}
+
+/*!	\brief Pin Change interrupt ISR
+**	\isr Pin Change interrupt handler
+**	\return nothing
+**/
+ISR(PCINT0_vect)
+{
+	// no need to clear any interrupt flag?
+	CaptureTimer::isrTick_event();
+}
+#endif

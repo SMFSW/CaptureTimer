@@ -21,7 +21,7 @@ void setup() {
 	Serial.begin(115200);
 	
 	// initialize the capture timer pin & period
-	CaptureTimer::init(ctINPin, samplingPer);
+	CaptureTimer::init(samplingPer, ctINPin);
 }
 
 // the loop function runs over and over again forever
