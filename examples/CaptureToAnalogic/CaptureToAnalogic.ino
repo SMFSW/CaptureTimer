@@ -1,13 +1,13 @@
 /*
 	CaptureToAnalogic
-	Using interruptible pin for frequency sampling (raw)
+	Using interrupt-able pin for frequency sampling (raw)
 	and output samples to DAC (or duty cycle on a PWM)
 
 	This example code is in the public domain.
 
 	created 24 November 2016
-	latest mod 25 November 2016
-	by SMSFSW
+	latest mod 23 December 2016
+	by SMFSW
 */
 
 #include <CaptureTimer.h>
@@ -32,7 +32,7 @@
 #endif
 
 #define icINPin				2		//!< Pin used for Input Capture (ticks count)
-// Litteral Pin / Board
+// Literal Pin / Board
 // 2 / most arduino boards (or D2)
 // D4 / WeMos D1 R2
 // #2 / Feather HUZZAH
@@ -45,7 +45,7 @@ uint16_t maxOut = outMaxValue;
 
 void setup()
 {
-	CaptureTimer::init(samplingPer, icINPin);
+	CaptureTimer::initCapTicks(samplingPer, icINPin);
 
 	#if defined(__arm__)
 		analogWriteResolution(12);	// set DAC resolution to 12 bits for higher accuracy
@@ -56,7 +56,7 @@ void loop()
 {
 	uint16_t ticks;
 
-	if (CaptureTimer::getTicks(&ticks) == true)			// new datas acquired (happens once every (samplingPer)ms)
+	if (CaptureTimer::getTicks(&ticks) == true)			// new data acquired (happens once every (samplingPer)ms)
 	{
 		ticks = min(ticks, maxTicks);					// clamp value against max expected
 		valOut = map(ticks, 0, maxTicks, 0, maxOut);	// map ticks to DAC/PWMDutyCycle range

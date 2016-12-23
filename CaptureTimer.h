@@ -1,6 +1,6 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.4
+** \version v0.5
 ** \date 2016-2016
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
@@ -27,6 +27,7 @@
 
 #ifndef CaptureTimer_h
 #define CaptureTimer_h
+#define CaptureTimer_ver    "v0.5"
 
 #include <inttypes.h>
 
@@ -39,11 +40,23 @@
 ** \brief CaptureTimer Structure
 **/
 typedef volatile struct StructCap{
-		uint16_t	perAcq;			//!< acquisition period (in ms)
-		uint16_t	perCnt;			//!< ms timer counter (only used on ATTiny yet)
-		uint16_t	cnt;			//!< ticks counter
-		uint16_t	ticksData;		//!< number of ticks in the last acquired time window
-		boolean		dataReady;		//!< true is ticksData has been updated since last read
+		uint16_t		perAcq;			//!< acquisition period (in ms)
+		uint16_t		perCnt;			//!< ms timer counter (only used on ATTiny yet)
+		uint16_t		cnt;			//!< ticks counter
+		struct StructStretch {
+			uint16_t	perLow;			//!< period limit low (if Stretching is used)
+			uint16_t	perHigh;		//!< period limit high (if Stretching is used)
+		} Stretch;
+		struct StructTickCapture {
+			uint32_t	curTickTime;	//!< last tick time (in us)
+			uint32_t	prevTickTime;	//!< previous than last tick time (in us)
+			boolean		dataReady;		//!< true if new data is returned
+		} TickCapture;
+		uint16_t		ticksData;		//!< number of ticks in the last acquired time window
+		boolean			dataReady;		//!< true is ticksData has been updated since last read
+		boolean			perStretch;		//!< true if period adaptation for higher output accuracy is enabled
+		boolean			freqMes;		//!< true if freq measurement is enabled
+		boolean			timeMes;		//!< true if time measurement between ticks is enabled
 } capture;
 
 
@@ -54,20 +67,44 @@ namespace CaptureTimer
 {
 	extern capture _cap;	//!< Capture struct instance
 
-	/*!	\brief Initialisation routine
+	/*!	\brief Initialisation routine (for frequency measurement)
 	**	\param [in] per - Period of the timer (assuming it represents milliseconds)
+	**	\param [in] pin - pin for input capture
+	**	\param [in] edge - triggering edge
+	**	\param [in] stretch - period stretching
+	**	\return nothing
+	**/
+	void initCapTicks(uint16_t per, uint8_t pin, uint8_t edge = FALLING, boolean stretch = false);
+
+	/*!	\brief Initialisation routine (for tick delay measurement)
 	**	\param [in] pin - pin for input capture
 	**	\param [in] edge - triggering edge
 	**	\return nothing
 	**/
-	void init(uint16_t per, uint8_t pin, uint8_t edge = FALLING);
+	void initCapTime(uint8_t pin, uint8_t edge = FALLING);
 	
 	/*!	\brief Set a new sampling period
 	**	\param [in] per - Period of the timer (assuming it represents milliseconds)
 	**	\return nothing
 	**/
 	void setPeriod(uint16_t per);
-	
+
+	/*!	\brief Check & perform period stretching if needed
+	**	\return nothing
+	**/
+	void perStretch();
+
+	/*!	\brief Start timer counting time for next tick
+	**	\return nothing
+	**/
+	void startTickCapture();
+
+	/*!	\brief Get the period between the last 2 ticks or since \i startTickSample called  (in microseconds)
+	**	\param [in, out] res - pointer to result of previous tick period in us (uint32 type)
+	**	\return true if result returned is relevant
+	**/
+	boolean getTickCapture(uint32_t * res);
+
 	/*!	\brief Get ticks count (with dataReady flag set up)
 	**	\note if flag cap.dataReady doesn't need to be updated, use xgetTicks() instead
 	**	\param [in, out] res - pointer to result of previous acquisition ticks count (uint16 type)
@@ -75,7 +112,7 @@ namespace CaptureTimer
 	**	\retval false - no new data (new sample pending)
 	**/
 	boolean getTicks(uint16_t * res);
-	
+
 	/*!	\brief Get ticks count SCALED (with dataReady flag set up)
 	**	\param [in, out] res - pointer to result of previous acquisition scaled ticks count (uint16 type)
 	**	\param [in] scl - result scale
@@ -83,13 +120,13 @@ namespace CaptureTimer
 	**	\retval false - no new data (new sample pending)
 	**/
 	boolean getScaledTicks(uint16_t * res, const float scl);
-	
+
 	/*!	\brief Get Frequency (with dataReady flag set up)
 	**	\param [in, out] res - pointer to result of previous acquisition Frequency (uint16 type)
 	**	\retval true - new data acquired
 	**	\retval false - no new data (new sample pending)
 	**/
-	inline boolean getFreq(uint16_t * res){
+	inline boolean getFreq(uint16_t * res) {
 		return getScaledTicks(res, 1000.0f);	// call getScaledTicks with a 1000ms time basis (means get Frequency)
 	}
 	
@@ -99,19 +136,26 @@ namespace CaptureTimer
 	inline uint16_t getPeriod() {
 		return _cap.perAcq;		// get sampling period from capture struct
 	}
-	
-	/*!	\brief Is there new data available
+
+	/*!	\brief Is there new ticks data available
 	**	\return \b true if new data ready, \b false otherwise
 	**/
-	inline boolean isDataReady(){
-		return _cap.dataReady;	// get dataReady flag from capture struct
+	inline boolean isTicksDataReady() {
+		return _cap.dataReady & _cap.freqMes;	// get dataReady flag from capture struct
 	}
-	
+
+	/*!	\brief Is there new time data available
+	**	\return \b true if new data ready, \b false otherwise
+	**/
+	inline boolean isTimeDataReady() {
+		return _cap.TickCapture.dataReady & _cap.timeMes;	// get dataReady flag from capture struct
+	}
+
 	/*!	\brief Get ticks count (without dataReady flag set up)
 	**	\warning this inline doesn't update flag cap.dataReady
 	**	\return Previous acquisition ticks count on uint16 type
 	**/
-	inline uint16_t xgetTicks(){
+	inline uint16_t xgetTicks() {
 		return _cap.ticksData;	// get ticks count from capture struct
 	}
 	

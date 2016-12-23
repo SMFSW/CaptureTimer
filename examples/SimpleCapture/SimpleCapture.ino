@@ -1,12 +1,12 @@
 /*
 	SimpleCapture
-	Using interruptible pin for frequency sampling (raw)
+	Using interrupt-able pin for frequency sampling (raw)
 
 	This example code is in the public domain.
 
 	created 22 November 2016
-	latest mod 24 November 2016
-	by SMSFSW
+	latest mod 23 December 2016
+	by SMFSW
 */
 
 #include <CaptureTimer.h>
@@ -21,7 +21,7 @@ void setup() {
 	Serial.begin(115200);
 	
 	// initialize the capture timer pin & period
-	CaptureTimer::init(samplingPer, ctINPin);
+	CaptureTimer::initCapTicks(samplingPer, ctINPin);
 }
 
 // the loop function runs over and over again forever
@@ -29,7 +29,7 @@ void loop() {
 	uint16_t ticks;
 
 	if (CaptureTimer::getTicks(&ticks) == true)
-	{	// Only print on serial if new datas are available
+	{	// Only print on serial if new data is available
 		Serial.print("Ticks: ");
 		Serial.print(ticks);
 		Serial.print("\tFreq: ");

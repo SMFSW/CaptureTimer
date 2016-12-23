@@ -1,6 +1,6 @@
 # CaptureTimer
 Arduino Input Capture Library
-This library is intended to attach interrupt on a pin for frequency sampling
+This library is intended to attach interrupt on a pin for frequency/time sampling
 
 notes:
 use of MsTimer2 library for AVR architecture
@@ -14,6 +14,7 @@ refer to Doxygen generated documentation & example sketches
 examples included:
 SimpleCapture.ino: Capture signal and show result on serial
 CaptureToAnalogic.ino: Capture signal and output scaled results to DAC / PWM (depending board ressources)
+TriggeredTickCapture.ino: Using interrupt-able pin for Tick time capture using output pin to generate ticks
 
 Doxygen doc can be generated for the class using doxyfile
 

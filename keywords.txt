@@ -10,13 +10,18 @@ CaptureTimer	KEYWORD1
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
-init	KEYWORD2
+initCapTicks	KEYWORD2
+initCapTime	KEYWORD2
 setPeriod	KEYWORD2
+perStretch	KEYWORD2
+startTickCapture	KEYWORD2
+getTickCapture	KEYWORD2
 getTicks	KEYWORD2
 getScaledTicks	KEYWORD2
 getFreq	KEYWORD2
 getPeriod	KEYWORD2
-isDataReady	KEYWORD2
+isTimeDataReady	KEYWORD2
+isTicksDataReady	KEYWORD2
 xgetTicks	KEYWORD2
 
 #######################################

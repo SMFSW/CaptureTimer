@@ -9,8 +9,14 @@ Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
 ------------
 
 ** Actual:
+v0.5	2x Dec 2016:
+- Tiny cores yet not working
+- Lib refactored to handle 2 functions:
+	* Ticks capture in a time window
+	* Time capture (since previous tick or manually triggered)
+- Added functions & calls for period stretching (ticks capture) -> yet to be implemented
 
-v0.4	2x Nov 2016:
+v0.4	23 Nov 2016:
 - code generation optimisation using inlines
 - CaptureToAnlogic sketch updated to get a correct DAC/PWM resolution depending used core
 - added support for ATTiny chips (yet untested)

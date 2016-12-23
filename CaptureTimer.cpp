@@ -1,6 +1,6 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.4
+** \version v0.5
 ** \date 2016-2016
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
@@ -27,7 +27,8 @@
 			MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 			Lesser General Public License for more details.
 **/
-
+// TODO: debug TINY targets and find out what's not working
+// TODO: implement some period stretching
 
 #if ARDUINO > 22
 #include <Arduino.h> 
@@ -59,7 +60,7 @@
 
 #include "CaptureTimer.h"
 
-volatile capture CaptureTimer::_cap = { 0, 0, 0, 0, false };
+volatile capture CaptureTimer::_cap = { 0, 0, 0, {0, 0}, {0, 0, false}, 0, false, false, false, false };
 
 
 #if defined(__TINY__)
@@ -84,9 +85,12 @@ static void CaptureTimer::setTimerTiny(uint16_t per)
 #endif
 
 
-void CaptureTimer::init(uint16_t per, uint8_t pin, uint8_t edge)
+void CaptureTimer::initCapTicks(uint16_t per, uint8_t pin, uint8_t edge, boolean stretch)
 {
 	_cap.perAcq = per;
+	_cap.perStretch = stretch;
+	_cap.timeMes = false;
+	_cap.freqMes = true;
 
 	pinMode(pin, INPUT_PULLUP);													// ticks counter pin set mode
 
@@ -115,8 +119,28 @@ void CaptureTimer::init(uint16_t per, uint8_t pin, uint8_t edge)
 	#endif
 }
 
+void CaptureTimer::initCapTime(uint8_t pin, uint8_t edge)
+{
+	_cap.timeMes = true;
+	_cap.freqMes = false;
+
+	pinMode(pin, INPUT_PULLUP);													// ticks counter pin set mode
+
+#if defined(__TINY__)
+		cli();
+		GIMSK = 0b00100000;		// turns on pin change interrupts
+		//PCMSK = 0b00010111;	// turn on interrupts on pins PB0, PB1, PB2 & PB4
+		PCMSK |= 1 << pin;		// turn on interrupts on pin
+		sei();
+#else
+	attachInterrupt(digitalPinToInterrupt(pin), isrTick_event, edge);	// ticks counter interrupt pin
+#endif
+}
+
 void CaptureTimer::setPeriod(uint16_t per)
 {
+	if (!_cap.freqMes)  { return; }
+
 	_cap.perAcq = per;
 
 	#if defined(__TINY__)
@@ -135,23 +159,52 @@ void CaptureTimer::setPeriod(uint16_t per)
 	#endif
 }
 
+void CaptureTimer::perStretch()
+{
+}
+
+void CaptureTimer::startTickCapture()
+{
+	//if (!_cap.timeMes)	{ return; }	// in this case, check is not that important
+
+	_cap.TickCapture.curTickTime = _cap.TickCapture.prevTickTime = micros();
+	_cap.TickCapture.dataReady = false;
+}
+
+boolean CaptureTimer::getTickCapture(uint32_t * res)
+{
+	boolean newData = isTimeDataReady();
+	_cap.TickCapture.dataReady = false;
+
+	#if defined(__TINY__) | defined(__AVR__) | defined(ARDUINO_ARCH_ESP8266) | defined(ARDUINO_ESP8266_ESP01)
+		cli();//noInterrupts();
+	#endif
+
+	*res = _cap.TickCapture.curTickTime - _cap.TickCapture.prevTickTime;
+
+	#if defined(__TINY__) | defined(__AVR__) | defined(ARDUINO_ARCH_ESP8266) | defined(ARDUINO_ESP8266_ESP01)
+		sei();//interrupts();
+	#endif
+
+	return newData;
+}
+
 boolean CaptureTimer::getTicks(uint16_t * res)
 {
-	boolean mem = _cap.dataReady;	// memorize if new data is to be returned
-	*res = _cap.ticksData;			// write ticks count
-	_cap.dataReady = false;			// erase ISR flag
-	return mem;
+	boolean newData = isTicksDataReady();	// memorize if new data is to be returned
+	_cap.dataReady = false;					// erase ISR flag
+	*res = _cap.ticksData;					// write ticks count
+	return newData;
 }
 
 boolean CaptureTimer::getScaledTicks(uint16_t * res, const float scl)
 {
 	float time_coef = scl / (float) _cap.perAcq;				// determine coefficient based on sampling time
-	boolean mem = _cap.dataReady;								// memorize if new datas is to be returned
-	*res = (uint16_t) ((float) _cap.ticksData * time_coef);		// write scaled ticks count
+	boolean newData = isTicksDataReady();						// memorize if new data is to be returned
 	_cap.dataReady = false;										// erase ISR flag
-	return mem;
+	*res = (uint16_t) ((float) _cap.ticksData * time_coef);		// write scaled ticks count
+	return newData;
 }
-
 
 /*** Interrupt Service Routines ***/
 
@@ -161,6 +214,13 @@ inline	// inlining isrTick_event on ATTiny to avoid call to function from isr
 void CaptureTimer::isrTick_event()
 {
 	_cap.cnt++;	// increase ticks count
+
+	if (_cap.timeMes)
+	{
+		_cap.TickCapture.prevTickTime = _cap.TickCapture.curTickTime;
+		_cap.TickCapture.curTickTime = micros();
+		_cap.TickCapture.dataReady = true;
+	}
 }
 
 #if defined(__TINY__)
@@ -171,6 +231,8 @@ void CaptureTimer::isrTick_timer()
 	_cap.ticksData = _cap.cnt;	// store ticks count for the time window
 	_cap.cnt = 0;				// reset ticks counter
 	_cap.dataReady = true;		// raise ISR flag
+
+	if (_cap.perStretch)    { CaptureTimer::perStretch(); }
 }
 
 #if defined(__TINY__)
