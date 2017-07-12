@@ -7,7 +7,8 @@
 
 	This example code is in the public domain.
 
-	created 23 December 2016
+	created Dec 23 2016
+	latest mod Jan 7 2016
 	by SMFSW
 */
 
@@ -24,31 +25,47 @@
 // D4 / WeMos D1 R2
 // #2 / Feather HUZZAH
 
+void tickGenerator()
+{
+	// Note that this tick generator stretches following the amount of code runned by cpu cycle & interrupts
+	// use a real freq generator of any kind for accurate tick(s) if you want to test library results accuracy
+	static const uint16_t ovf = ((uint16_t) -1L) / 1;	// overflow at 100% of full cnt scale
+	static const uint16_t thr = ovf / 2;				// threshold at 50% of overflow cnt scale
+	static uint16_t cnt = 0;
+	
+	digitalWrite(tickOUTPin, (cnt >= thr) ? HIGH : LOW);
+	if (++cnt > ovf)	{ cnt = 0; }
+	
+	if (cnt == thr)
+	{
+		Serial.print("Start capture at:");
+		Serial.print(micros());
+		Serial.print(" us");
+		CaptureTimer::startTickCapture();
+	}
+}
 
-// the setup function runs once when you press reset or power the board
-void setup() {
+
+void setup()
+{
 	Serial.begin(115200);
 
 	// initialize the capture timer pin & period
 	CaptureTimer::initCapTime(ctINPin);
 
-    pinMode(tickOUTPin, OUTPUT);
+	pinMode(tickOUTPin, OUTPUT);
 }
 
-// the loop function runs over and over again forever
-void loop() {
-	static uint16_t cnt = 0;
-	static const uint16_t threshold = pow(256, sizeof(cnt)) / 2;    // threshold at 50% of full cnt scale
+
+void loop()
+{
 	uint32_t Time;
-	boolean val, trig;
 
-	val = (cnt++ >= threshold) ? HIGH : LOW;
-	digitalWrite(tickOUTPin, val);
-	if (cnt == threshold)	{ CaptureTimer::startTickCapture(); }
-
+	tickGenerator();
+	
 	if (CaptureTimer::getTickCapture(&Time) == true)
 	{	// Only print on serial if new data is available
-		Serial.print("Tick after: ");
+		Serial.print("\tTick after: ");
 		Serial.print(Time);
 		Serial.println(" us since triggered");
 	}

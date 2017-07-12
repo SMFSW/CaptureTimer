@@ -1,7 +1,7 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.5
-** \date 2016-2016
+** \version v0.7
+** \date 2016-2017
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
 ** \note use of MsTimer2 library for AVR architecture
@@ -31,9 +31,9 @@
 // TODO: implement some period stretching
 
 #if ARDUINO > 22
-#include <Arduino.h> 
+#include <Arduino.h>
 #else
-#include <WProgram.h> 
+#include <WProgram.h>
 #endif
 
 
@@ -46,7 +46,7 @@
 	#define USEC_PER_TICK	1000							/* microseconds per clock interrupt tick */
 	#define CLK_IT_OVERHEAD	4								/* fudge factor for clock interrupt overhead */
 	#define PRESCALER		1024							/* timer clock prescaler */
-	#define CLKS_PER_USEC	(F_CPU / PRESCALER / 1000000)   /* timer clocks per microsecond */
+	#define CLKS_PER_USEC	(F_CPU / PRESCALER / 1000000)	/* timer clocks per microsecond */
 	#define INIT_TIMER		(256 - (USEC_PER_TICK * CLKS_PER_USEC) + CLK_IT_OVERHEAD)
 #elif defined(__AVR__)
 	#include <MsTimer2.h>
@@ -60,27 +60,25 @@
 
 #include "CaptureTimer.h"
 
-volatile capture CaptureTimer::_cap = { 0, 0, 0, {0, 0}, {0, 0, false}, 0, false, false, false, false };
+volatile capture CaptureTimer::_cap = { 0, 0, 0, {0, 0}, {0, 0, false}, 0, 0.0f, defaultFilterSpeed, false, false, false, false };
 
 
 #if defined(__TINY__)
 /*!	\brief Initialisation of Tiny Timer
-**	\param [in] per - Period of the timer (assuming it represents milliseconds)
 **	\return nothing
 **/
-static void CaptureTimer::setTimerTiny(uint16_t per)
+static void CaptureTimer::setTimerTiny(void)
 {
-	_cap.perAcq = per;
-
+	// TODO: Tiny, check why no timer callback
 	// setup Timer 1
 	cli();
-	TCCR1 = 0;		// normal mode
+	TCCR1 = 0;							// normal mode
 	// Prescaler 1024 (16M/1024 = 64 microseconds per tick)
 	// timer interval can range from 64us to 128 microseconds
-	TCCR1 = /*CTC1 |*/ CS13 | CS11 | CS10;	// Auto reload
-	TCNT1 = INIT_TIMER;	// set to 1ms time basis
-	TIMSK |= TOIE1;	//Timer Overflow Interrupt Enable
-	sei();		// enable interrupts
+	TCCR1 = CTC1 | CS13 | CS11 | CS10;	// Auto reload
+	TCNT1 = INIT_TIMER;					// set to 1ms time basis
+	TIMSK |= TOIE1;						// Timer Overflow Interrupt Enable
+	sei();								// enable interrupts
 }
 #endif
 
@@ -105,8 +103,7 @@ void CaptureTimer::initCapTicks(uint16_t per, uint8_t pin, uint8_t edge, boolean
 	#endif
 
 	#if defined(__TINY__)
-		(void) edge;
-		setTimerTiny(_cap.perAcq);
+		setTimerTiny();
 	#elif defined(__AVR__)
 		MsTimer2::set(_cap.perAcq, isrTick_timer);							// ticks counter timer set period & callback
 		MsTimer2::start();													// ticks counter timer start
@@ -139,7 +136,7 @@ void CaptureTimer::initCapTime(uint8_t pin, uint8_t edge)
 
 void CaptureTimer::setPeriod(uint16_t per)
 {
-	if (!_cap.freqMes)  { return; }
+	if (!_cap.freqMes)	{ return; }
 
 	_cap.perAcq = per;
 
@@ -157,6 +154,14 @@ void CaptureTimer::setPeriod(uint16_t per)
 		Timer0.stop();								// ticks counter timer stop
 		Timer0.start(_cap.perAcq * 1000);			// ticks counter timer set new period & restart
 	#endif
+}
+
+void CaptureTimer::setFilterSpeed(float speed, boolean rst)
+{
+	//if (!_cap.freqMes)	{ return; }		// Not needed here as it doesn't start anything
+
+	_cap.filtSpeed = speed;
+	if (rst)	{ _cap.ticksFiltered = 0.0f; }
 }
 
 void CaptureTimer::perStretch()
@@ -189,20 +194,21 @@ boolean CaptureTimer::getTickCapture(uint32_t * res)
 	return newData;
 }
 
-boolean CaptureTimer::getTicks(uint16_t * res)
+boolean CaptureTimer::getTicks(uint16_t * res, boolean filt)
 {
-	boolean newData = isTicksDataReady();	// memorize if new data is to be returned
-	_cap.dataReady = false;					// erase ISR flag
-	*res = _cap.ticksData;					// write ticks count
+	boolean newData = isTicksDataReady();							// mem if new data is to be returned
+	_cap.dataReady = false;											// erase ISR flag
+	*res = (uint16_t) (filt ? _cap.ticksFiltered : _cap.ticksData);	// write ticks count
 	return newData;
 }
 
-boolean CaptureTimer::getScaledTicks(uint16_t * res, const float scl)
+boolean CaptureTimer::getScaledTicks(uint16_t * res, const float scl, boolean filt)
 {
-	float time_coef = scl / (float) _cap.perAcq;				// determine coefficient based on sampling time
-	boolean newData = isTicksDataReady();						// memorize if new data is to be returned
-	_cap.dataReady = false;										// erase ISR flag
-	*res = (uint16_t) ((float) _cap.ticksData * time_coef);		// write scaled ticks count
+	float ticks = (float) (filt ? _cap.ticksFiltered : _cap.ticksData);
+	float time_coef = scl / (float) _cap.perAcq;						// determine coefficient based on sampling time
+	boolean newData = isTicksDataReady();								// mem if new data is to be returned
+	_cap.dataReady = false;												// erase ISR flag
+	*res = (uint16_t) (ticks * time_coef);								// write scaled ticks count
 	return newData;
 }
 
@@ -231,8 +237,10 @@ void CaptureTimer::isrTick_timer()
 	_cap.ticksData = _cap.cnt;	// store ticks count for the time window
 	_cap.cnt = 0;				// reset ticks counter
 	_cap.dataReady = true;		// raise ISR flag
-
-	if (_cap.perStretch)    { CaptureTimer::perStretch(); }
+	
+	_cap.ticksFiltered += _cap.filtSpeed * (((float) _cap.ticksData - _cap.ticksFiltered) / (float) _cap.perAcq);
+	
+	if (_cap.perStretch)	{ CaptureTimer::perStretch(); }
 }
 
 #if defined(__TINY__)
@@ -264,3 +272,20 @@ ISR(PCINT0_vect)
 	CaptureTimer::isrTick_event();
 }
 #endif
+
+
+/*
+// behind the scenes function that is called when data is ready
+void CaptureTimer::onEventService(uint32_t data)
+{
+	if(!user_onEvent)	{ return; }
+	// alert user program
+	user_onEvent(numBytes);
+}
+
+// sets function called on event
+void CaptureTimer::onEvent(void (*function)(void))
+{
+	user_onEvent = function;
+}
+*/

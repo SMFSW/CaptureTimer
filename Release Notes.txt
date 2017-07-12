@@ -1,5 +1,5 @@
 Arduino Input Capture Library
-2016-2016 SMFSW
+2016-2017 SMFSW
 
 Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
 	- issues encountered
@@ -9,7 +9,18 @@ Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
 ------------
 
 ** Actual:
-v0.5	2x Dec 2016:
+v0.7	12 Jul 2017:
+- compliance with Arduino v1.5+ IDE source located in src subfolder
+
+v0.6	22 Jan 2017:
+- updated Doxyfile
+- extended examples with a basic IO tickGenerator onboard for testing ease (& reviewed sampling periods accordingly)
+- added ticks value filtering for smoothen counter results
+- fixes for Tiny platforms (yet timer is not still not working)
+
+v0.5b2	03 Jan 2017:
+- Changed threshold init in TriggeredTickCapture.ino
+v0.5	23 Dec 2016:
 - Tiny cores yet not working
 - Lib refactored to handle 2 functions:
 	* Ticks capture in a time window

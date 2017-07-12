@@ -13,6 +13,7 @@ CaptureTimer	KEYWORD1
 initCapTicks	KEYWORD2
 initCapTime	KEYWORD2
 setPeriod	KEYWORD2
+setFilterSpeed	KEYWORD2
 perStretch	KEYWORD2
 startTickCapture	KEYWORD2
 getTickCapture	KEYWORD2
