@@ -1,6 +1,6 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.7
+** \version v0.8
 ** \date 2016-2017
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
@@ -27,7 +27,7 @@
 
 #ifndef CaptureTimer_h
 #define CaptureTimer_h
-#define CaptureTimer_ver	"v0.7"
+#define CaptureTimer_ver	"v0.8"
 
 #if defined(DOXY)
 	// Define gcc __attribute__ as void when Doxygen runs
@@ -85,27 +85,27 @@ namespace CaptureTimer
 	**	\param [in] stretch - period stretching
 	**	\return nothing
 	**/
-	void initCapTicks(uint16_t per, uint8_t pin, uint8_t edge = FALLING, boolean stretch = false);
+	void initCapTicks(const uint16_t per, const uint8_t pin, const uint8_t edge = FALLING, const boolean stretch = false);
 
 	/*!	\brief Initialisation routine (for tick delay measurement)
 	**	\param [in] pin - pin for input capture
 	**	\param [in] edge - triggering edge
 	**	\return nothing
 	**/
-	void initCapTime(uint8_t pin, uint8_t edge = FALLING);
+	void initCapTime(const uint8_t pin, const uint8_t edge = FALLING);
 
 	/*!	\brief Set a new sampling period
 	**	\param [in] per - Period of the timer (assuming it represents milliseconds)
 	**	\return nothing
 	**/
-	void setPeriod(uint16_t per);
+	void setPeriod(const uint16_t per);
 
 	/*!	\brief Set a new ticks filtering speed
 	**	\param [in] speed - new speed multiplier (float 1.0f being normal speed)
 	**	\param [in] restart - if set to true, starts filtered value from 0
 	**	\return nothing
 	**/
-	void setFilterSpeed(float speed, boolean restart = false);
+	void setFilterSpeed(const float speed, const boolean restart = false);
 
 	/*!	\brief Check & perform period stretching if needed
 	**	\return nothing
@@ -115,7 +115,7 @@ namespace CaptureTimer
 	/*!	\brief Start timer counting time for next tick
 	**	\return nothing
 	**/
-	void startTickCapture();
+	void startTickCapture(void);
 
 	/*!	\brief Get the period between the last 2 ticks or since startTickSample called (in microseconds)
 	**	\param [in, out] res - pointer to result of previous tick period in us (uint32 type)
@@ -130,7 +130,7 @@ namespace CaptureTimer
 	**	\retval true - new data acquired
 	**	\retval false - no new data (new sample pending)
 	**/
-	boolean getTicks(uint16_t * res, boolean filt = false);
+	boolean getTicks(uint16_t * res, const boolean filt = false);
 
 	/*!	\brief Get ticks count SCALED (with dataReady flag set up)
 	**	\param [in, out] res - pointer to result of previous acquisition scaled ticks count (uint16 type)
@@ -139,7 +139,7 @@ namespace CaptureTimer
 	**	\retval true - new data acquired
 	**	\retval false - no new data (new sample pending)
 	**/
-	boolean getScaledTicks(uint16_t * res, const float scl, boolean filt = false);
+	boolean getScaledTicks(uint16_t * res, const float scl, const boolean filt = false);
 
 	/*!	\brief Get Frequency (with dataReady flag set up)
 	**	\param [in, out] res - pointer to result of previous acquisition Frequency (uint16 type)
@@ -147,58 +147,49 @@ namespace CaptureTimer
 	**	\retval true - new data acquired
 	**	\retval false - no new data (new sample pending)
 	**/
-	inline boolean getFreq(uint16_t * res, boolean filt = false) {
-		return getScaledTicks(res, 1000.0f, filt);	// call getScaledTicks with a 1000ms time basis (means get Frequency)
-	}
+	inline boolean __attribute__((__always_inline__)) getFreq(uint16_t * res, const boolean filt = false) {
+		return getScaledTicks(res, 1000.0f, filt); }	// call getScaledTicks with a 1000ms time basis (means get Frequency)
 
 	/*!	\brief Get the period of the capture timer
 	**	\return Period in ms on uint16 type
 	**/
-	inline uint16_t getPeriod() {
-		return _cap.perAcq;		// get sampling period from capture struct
-	}
+	inline uint16_t __attribute__((__always_inline__)) getPeriod(void) {
+		return _cap.perAcq; }		// get sampling period from capture struct
 
 	/*!	\brief Is there new ticks data available
 	**	\return \b true if new data ready, \b false otherwise
 	**/
-	inline boolean isTicksDataReady() {
-		return _cap.dataReady & _cap.freqMes;	// get dataReady flag from capture struct
-	}
+	inline boolean __attribute__((__always_inline__)) isTicksDataReady(void) {
+		return _cap.dataReady & _cap.freqMes; }	// get dataReady flag from capture struct
 
 	/*!	\brief Is there new time data available
 	**	\return \b true if new data ready, \b false otherwise
 	**/
-	inline boolean isTimeDataReady() {
-		return _cap.TickCapture.dataReady & _cap.timeMes;	// get dataReady flag from capture struct
-	}
+	inline boolean __attribute__((__always_inline__)) isTimeDataReady(void) {
+		return _cap.TickCapture.dataReady & _cap.timeMes; }	// get dataReady flag from capture struct
 
 	/*!	\brief Get ticks count (without dataReady flag set up)
 	**	\warning this inline doesn't update flag cap.dataReady
 	**	\return Previous acquisition ticks count on uint16 type
 	**/
-	inline uint16_t xgetTicks() {
-		return _cap.ticksData;	// get ticks count from capture struct
-	}
+	inline uint16_t __attribute__((__always_inline__)) xgetTicks(void) {
+		return _cap.ticksData; }	// get ticks count from capture struct
 
 	#if defined(__TINY__)
-	static void setTimerTiny(uint16_t per);
-
-	inline	// inlining isrTick_timer on attiny to avoid call to function from isr
+	void setTimerTiny(const uint16_t per);
 	#endif
+
 	/*!	\brief Sampling Timer handler
 	**	\isr Sampling Timer handler
 	**	\return nothing
 	**/
-	void isrTick_timer();
+	void isrTick_timer(void);
 
-	#if defined(__TINY__)
-	inline	// inlining isrTick_event on attiny to avoid call to function from isr
-	#endif
 	/*!	\brief Tick trigger interrupt handler
 	**	\isr Tick trigger interrupt handler
 	**	\return nothing
 	**/
-	void isrTick_event();
+	void isrTick_event(void);
 }
 
 #endif /* CaptureTimer_h */

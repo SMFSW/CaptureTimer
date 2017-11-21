@@ -9,6 +9,11 @@ Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
 ------------
 
 ** Actual:
+v0.8	21 Nov 2017:
+- Added const qualifier for function parameters
+- Added always_inline qualifier
+- Refactored library for TINY platforms handling (yet still not working on this platform)
+
 v0.7	12 Jul 2017:
 - compliance with Arduino v1.5+ IDE source located in src subfolder
 

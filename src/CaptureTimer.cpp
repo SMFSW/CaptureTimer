@@ -1,6 +1,6 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.7
+** \version v0.8
 ** \date 2016-2017
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
@@ -47,7 +47,7 @@
 	#define CLK_IT_OVERHEAD	4								/* fudge factor for clock interrupt overhead */
 	#define PRESCALER		1024							/* timer clock prescaler */
 	#define CLKS_PER_USEC	(F_CPU / PRESCALER / 1000000)	/* timer clocks per microsecond */
-	#define INIT_TIMER		(256 - (USEC_PER_TICK * CLKS_PER_USEC) + CLK_IT_OVERHEAD)
+	#define INIT_TIMER		((uint16_t) (256 - (USEC_PER_TICK * CLKS_PER_USEC) + CLK_IT_OVERHEAD))
 #elif defined(__AVR__)
 	#include <MsTimer2.h>
 #elif defined(ARDUINO_ARCH_ESP8266) | defined(ARDUINO_ESP8266_ESP01)
@@ -67,7 +67,7 @@ volatile capture CaptureTimer::_cap = { 0, 0, 0, {0, 0}, {0, 0, false}, 0, 0.0f,
 /*!	\brief Initialisation of Tiny Timer
 **	\return nothing
 **/
-static void CaptureTimer::setTimerTiny(void)
+void CaptureTimer::setTimerTiny(const uint16_t per)
 {
 	// TODO: Tiny, check why no timer callback
 	// setup Timer 1
@@ -83,7 +83,7 @@ static void CaptureTimer::setTimerTiny(void)
 #endif
 
 
-void CaptureTimer::initCapTicks(uint16_t per, uint8_t pin, uint8_t edge, boolean stretch)
+void CaptureTimer::initCapTicks(const uint16_t per, const uint8_t pin, const uint8_t edge, const boolean stretch)
 {
 	_cap.perAcq = per;
 	_cap.perStretch = stretch;
@@ -103,7 +103,7 @@ void CaptureTimer::initCapTicks(uint16_t per, uint8_t pin, uint8_t edge, boolean
 	#endif
 
 	#if defined(__TINY__)
-		setTimerTiny();
+		setTimerTiny(_cap.perAcq);
 	#elif defined(__AVR__)
 		MsTimer2::set(_cap.perAcq, isrTick_timer);							// ticks counter timer set period & callback
 		MsTimer2::start();													// ticks counter timer start
@@ -116,7 +116,7 @@ void CaptureTimer::initCapTicks(uint16_t per, uint8_t pin, uint8_t edge, boolean
 	#endif
 }
 
-void CaptureTimer::initCapTime(uint8_t pin, uint8_t edge)
+void CaptureTimer::initCapTime(const uint8_t pin, const uint8_t edge)
 {
 	_cap.timeMes = true;
 	_cap.freqMes = false;
@@ -134,7 +134,7 @@ void CaptureTimer::initCapTime(uint8_t pin, uint8_t edge)
 #endif
 }
 
-void CaptureTimer::setPeriod(uint16_t per)
+void CaptureTimer::setPeriod(const uint16_t per)
 {
 	if (!_cap.freqMes)	{ return; }
 
@@ -156,7 +156,7 @@ void CaptureTimer::setPeriod(uint16_t per)
 	#endif
 }
 
-void CaptureTimer::setFilterSpeed(float speed, boolean rst)
+void CaptureTimer::setFilterSpeed(const float speed, const boolean rst)
 {
 	//if (!_cap.freqMes)	{ return; }		// Not needed here as it doesn't start anything
 
@@ -168,7 +168,7 @@ void CaptureTimer::perStretch()
 {
 }
 
-void CaptureTimer::startTickCapture()
+void CaptureTimer::startTickCapture(void)
 {
 	//if (!_cap.timeMes)	{ return; }	// in this case, check is not that important
 
@@ -194,7 +194,7 @@ boolean CaptureTimer::getTickCapture(uint32_t * res)
 	return newData;
 }
 
-boolean CaptureTimer::getTicks(uint16_t * res, boolean filt)
+boolean CaptureTimer::getTicks(uint16_t * res, const boolean filt)
 {
 	boolean newData = isTicksDataReady();							// mem if new data is to be returned
 	_cap.dataReady = false;											// erase ISR flag
@@ -202,7 +202,7 @@ boolean CaptureTimer::getTicks(uint16_t * res, boolean filt)
 	return newData;
 }
 
-boolean CaptureTimer::getScaledTicks(uint16_t * res, const float scl, boolean filt)
+boolean CaptureTimer::getScaledTicks(uint16_t * res, const float scl, const boolean filt)
 {
 	float ticks = (float) (filt ? _cap.ticksFiltered : _cap.ticksData);
 	float time_coef = scl / (float) _cap.perAcq;						// determine coefficient based on sampling time
@@ -213,11 +213,7 @@ boolean CaptureTimer::getScaledTicks(uint16_t * res, const float scl, boolean fi
 }
 
 /*** Interrupt Service Routines ***/
-
-#if defined(__TINY__)
-inline	// inlining isrTick_event on ATTiny to avoid call to function from isr
-#endif
-void CaptureTimer::isrTick_event()
+void CaptureTimer::isrTick_event(void)
 {
 	_cap.cnt++;	// increase ticks count
 
@@ -229,10 +225,7 @@ void CaptureTimer::isrTick_event()
 	}
 }
 
-#if defined(__TINY__)
-inline	// inlining isrTick_timer on ATTiny to avoid call to function from isr
-#endif
-void CaptureTimer::isrTick_timer()
+void CaptureTimer::isrTick_timer(void)
 {
 	_cap.ticksData = _cap.cnt;	// store ticks count for the time window
 	_cap.cnt = 0;				// reset ticks counter
