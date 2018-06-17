@@ -1,9 +1,9 @@
 Arduino Input Capture Library
-2016-2017 SMFSW
+2016-2018 SMFSW
 
 Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
 	- issues encountered
-	- optimisations
+	- optimizations
 	- improvements & new functionalities
 
 ------------
