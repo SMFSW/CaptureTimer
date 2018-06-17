@@ -1,18 +1,10 @@
 /*!\file CaptureTimer.h
 ** \author SMFSW
-** \version v0.8
-** \date 2016-2017
+** \version v0.9
+** \date 2016-2018
 ** \copyright GNU Lesser General Public License v2.1
 ** \brief Arduino Input Capture Library
 ** \details This library is intended to attach interrupt on a pin for frequency sampling
-
-			Doxygen doc can be generated for the class using doxyfile
-
-			Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
-				- issues encountered
-				- optimisations
-				- improvements & new functionalities
-
 
 			This library is free software; you can redistribute it and/or
 			modify it under the terms of the GNU Lesser General Public

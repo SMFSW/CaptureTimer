@@ -16,16 +16,10 @@ refer to Doxygen generated documentation & example sketches
 
 ## Examples included
 
-SimpleCapture.ino: Capture signal and show result on serial
-CaptureToAnalogic.ino: Capture signal and output scaled results to DAC / PWM (depending board ressources)
-TriggeredTickCapture.ino: Using interrupt-able pin for Tick time capture using output pin to generate ticks
+[SimpleCapture.ino](examples/SimpleCapture/SimpleCapture.ino): Capture signal and show result on serial
+[CaptureToAnalogic.ino](examples/CaptureToAnalogic/CaptureToAnalogic.ino): Capture signal and output scaled results to DAC / PWM (depending board resources)
+[TriggeredTickCapture.ino](examples/TriggeredTickCapture/TriggeredTickCapture.ino): Using interrupt-able pin for Tick time capture using output pin to generate ticks
 
-## Misc
+## Release Notes
 
-Doxygen doc can be generated for the class using doxyfile.
-
-Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
-
-- issues encountered
-- optimisations
-- improvements & new functionalities
+See [release notes](ReleaseNotes.md)

@@ -1,0 +1,53 @@
+Arduino Input Capture Library
+2016-2017 SMFSW
+
+Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
+	- issues encountered
+	- optimisations
+	- improvements & new functionalities
+
+------------
+
+** Actual:
+v0.9	17 Jun 2018:
+- Changed url stated in library.properties
+
+v0.8	21 Nov 2017:
+- Added const qualifier for function parameters
+- Added always_inline qualifier
+- Refactored library for TINY platforms handling (yet still not working on this platform)
+
+v0.7	12 Jul 2017:
+- compliance with Arduino v1.5+ IDE source located in src subfolder
+
+v0.6	22 Jan 2017:
+- updated Doxyfile
+- extended examples with a basic IO tickGenerator onboard for testing ease (& reviewed sampling periods accordingly)
+- added ticks value filtering for smoothen counter results
+- fixes for Tiny platforms (yet timer is not still not working)
+
+v0.5b2	03 Jan 2017:
+- Changed threshold init in TriggeredTickCapture.ino
+v0.5	23 Dec 2016:
+- Tiny cores yet not working
+- Lib refactored to handle 2 functions:
+	* Ticks capture in a time window
+	* Time capture (since previous tick or manually triggered)
+- Added functions & calls for period stretching (ticks capture) -> yet to be implemented
+
+v0.4	23 Nov 2016:
+- code generation optimisation using inlines
+- CaptureToAnlogic sketch updated to get a correct DAC/PWM resolution depending used core
+- added support for ATTiny chips (yet untested)
+
+v0.3	25 Nov 2016:
+- Added ESP8266 support
+
+v0.2b2	24 Nov 2016:
+- CaptureToAnlogic sketch updated to compile by default on AVR platforms outpting on a PWM pin
+
+v0.2	24 Nov 2016:
+- Refactoring for good
+
+v0.1	23 Nov 2016:
+- First release
