@@ -24,8 +24,7 @@ install:
    - arduino --install-library "MsTimer2","DueTimer"
 
 script:
-   - build_avr_platforms
-   - build_io_platforms
+   - build_main_platforms
 
 # Generate and deploy documentation
 after_success:
