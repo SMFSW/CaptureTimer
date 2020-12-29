@@ -1,0 +1,33 @@
+language: c
+
+addons:
+  apt:
+    packages:
+      - graphviz
+
+# Blacklist
+branches:
+  except:
+    - gh-pages
+
+env:
+  global:
+     - PRETTYNAME="CaptureTimer: Arduino Input Capture Library"
+     - GH_REPO_NAME: CaptureTimer
+     - GH_REPO_REF: github.com/SMFSW/CaptureTimer.git
+     - DOXYFILE: $TRAVIS_BUILD_DIR/Doxyfile.auto
+
+before_install:
+   - source <(curl -SLs https://raw.githubusercontent.com/SMFSW/travis-ci-arduino/master/install.sh)
+
+install:
+   - arduino --install-library "MsTimer2","DueTimer"
+
+script:
+   - build_avr_platforms
+   - build_io_platforms
+
+# Generate and deploy documentation
+after_success:
+  - source <(curl -SLs  https://raw.githubusercontent.com/SMFSW/travis-ci-arduino/master/library_check.sh)
+  - source <(curl -SLs  https://raw.githubusercontent.com/SMFSW/travis-ci-arduino/master/doxy_gen_and_deploy.sh)

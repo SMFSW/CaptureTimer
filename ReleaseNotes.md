@@ -9,7 +9,8 @@ Feel free to share your thoughts @ xgarmanboziax@gmail.com about:
 ------------
 
 ** Actual:
-v0.9	17 Jun 2018:
+v0.9	29 Dec 2020:
+- Added support files and setup for TravisCI
 - Changed url stated in library.properties
 
 v0.8	21 Nov 2017:

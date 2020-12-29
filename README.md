@@ -1,4 +1,4 @@
-# CaptureTimer
+# CaptureTimer [![Build Status](https://travis-ci.org/SMFSW/CaptureTimer.svg?branch=master)](https://travis-ci.org/SMFSW/CaptureTimer)
 
 Arduino Input Capture Library
 
@@ -19,6 +19,12 @@ refer to Doxygen generated documentation & example sketches
 * [SimpleCapture.ino](examples/SimpleCapture/SimpleCapture.ino): Capture signal and show result on serial
 * [CaptureToAnalogic.ino](examples/CaptureToAnalogic/CaptureToAnalogic.ino): Capture signal and output scaled results to DAC / PWM (depending board resources)
 * [TriggeredTickCapture.ino](examples/TriggeredTickCapture/TriggeredTickCapture.ino): Using interrupt-able pin for Tick time capture using output pin to generate ticks
+
+## Documentation
+
+Doxygen doc can be generated using "Doxyfile".
+
+See [generated documentation](https://smfsw.github.io/CaptureTimer/)
 
 ## Release Notes
 
