@@ -1,4 +1,4 @@
-# CaptureTimer [![Build Status](https://travis-ci.org/SMFSW/CaptureTimer.svg?branch=master)](https://travis-ci.org/SMFSW/CaptureTimer)
+# CaptureTimer [![Build Status](https://travis-ci.com/SMFSW/CaptureTimer.svg?branch=master)](https://travis-ci.com/SMFSW/CaptureTimer)
 
 Arduino Input Capture Library
 
