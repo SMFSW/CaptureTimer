@@ -15,6 +15,7 @@ env:
      - PRETTYNAME="CaptureTimer: Arduino Input Capture Library"
      - GH_REPO_NAME: CaptureTimer
      - GH_REPO_REF: github.com/SMFSW/CaptureTimer.git
+     - INSTALL_PLATFORMS: zero,esp8266,avr,samd
      - DOXYFILE: $TRAVIS_BUILD_DIR/Doxyfile.auto
 
 before_install:
@@ -24,7 +25,9 @@ install:
    - arduino --install-library "MsTimer2","DueTimer"
 
 script:
-   - build_main_platforms
+   - build_avr_platforms
+   - build_samd_platforms
+   - build_io_platforms
 
 # Generate and deploy documentation
 after_success:
