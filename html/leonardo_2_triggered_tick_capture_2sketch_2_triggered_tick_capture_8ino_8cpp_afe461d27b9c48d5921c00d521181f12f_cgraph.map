@@ -1,0 +1,6 @@
+<map id="loop" name="loop">
+<area shape="rect" id="node2" href="$leonardo_2_triggered_tick_capture_2sketch_2_triggered_tick_capture_8ino_8cpp.html#abced3065b215a839c63a921b3fa51728" title="tickGenerator" alt="" coords="155,8,264,35"/>
+<area shape="rect" id="node4" href="$namespace_capture_timer.html#a54d0c025f2ff761de33214f9c9937c45" title="Get the period between the last 2 ticks or since startTickSample called (in microseconds) ..." alt="" coords="103,60,316,87"/>
+<area shape="rect" id="node3" href="$namespace_capture_timer.html#ae47d726ffc79c6b39028fccec7580153" title="Start timer counting time for next tick. " alt="" coords="364,5,587,32"/>
+<area shape="rect" id="node5" href="$namespace_capture_timer.html#af467ffc09255c88c0e2b8bd35318f589" title="Is there new time data available. " alt="" coords="381,57,570,98"/>
+</map>

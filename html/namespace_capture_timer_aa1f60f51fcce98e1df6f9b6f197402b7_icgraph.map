@@ -1,0 +1,9 @@
+<map id="CaptureTimer::isrTick_event" name="CaptureTimer::isrTick_event">
+<area shape="rect" id="node2" href="$namespace_capture_timer.html#aacccbeebcd828ba6306cafbe8ea9f67e" title="Initialisation routine (for frequency measurement) " alt="" coords="449,60,641,87"/>
+<area shape="rect" id="node4" href="$namespace_capture_timer.html#a57454203517480a673bde898a4908053" title="Initialisation routine (for tick delay measurement) " alt="" coords="209,5,401,32"/>
+<area shape="rect" id="node6" href="$namespace_capture_timer.html#afada24a01f94a5966ecfa2a6b3965845" title="Sampling Timer handler &#160;Sampling Timer handler. " alt="" coords="227,107,383,149"/>
+<area shape="rect" id="node8" href="$namespace_capture_timer.html#a3e5b1c6023fd8ce101d8917a7baf8073" title="Get ticks count (without dataReady flag set up) " alt="" coords="457,169,633,196"/>
+<area shape="rect" id="node3" href="$leonardo_2_capture_to_analogic_2preproc_2ctags__target__for__gcc__minus__e_8cpp.html#a4fc01d736fe50cf5b977f755b675f11d" title="setup" alt="" coords="689,60,748,87"/>
+<area shape="rect" id="node5" href="$leonardo_2_triggered_tick_capture_2preproc_2ctags__target__for__gcc__minus__e_8cpp.html#a4fc01d736fe50cf5b977f755b675f11d" title="setup" alt="" coords="516,5,575,32"/>
+<area shape="rect" id="node7" href="$namespace_capture_timer.html#a636d14461bd8cc899990cc0a6e9e555f" title="Set a new sampling period. " alt="" coords="457,115,634,141"/>
+</map>

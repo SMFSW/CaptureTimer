@@ -1,0 +1,4 @@
+<map id="CaptureTimer::getFreq" name="CaptureTimer::getFreq">
+<area shape="rect" id="node2" href="$namespace_capture_timer.html#a9b3f39de56a55a0ae5eaccf5b1113e20" title="Get ticks count SCALED (with dataReady flag set up) " alt="" coords="219,13,431,39"/>
+<area shape="rect" id="node3" href="$namespace_capture_timer.html#a88b6925dca4cdd5e3d6e6f6f5d83eb16" title="Is there new ticks data available. " alt="" coords="479,5,668,47"/>
+</map>

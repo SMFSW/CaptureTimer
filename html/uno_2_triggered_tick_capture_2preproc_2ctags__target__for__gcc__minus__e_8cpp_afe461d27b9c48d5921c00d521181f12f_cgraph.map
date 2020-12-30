@@ -1,0 +1,5 @@
+<map id="loop" name="loop">
+<area shape="rect" id="node2" href="$leonardo_2_capture_to_analogic_2preproc_2ctags__target__for__gcc__minus__e_8cpp.html#abced3065b215a839c63a921b3fa51728" title="tickGenerator" alt="" coords="155,5,264,32"/>
+<area shape="rect" id="node3" href="$namespace_capture_timer.html#a54d0c025f2ff761de33214f9c9937c45" title="Get the period between the last 2 ticks or since startTickSample called (in microseconds) ..." alt="" coords="103,56,316,83"/>
+<area shape="rect" id="node4" href="$namespace_capture_timer.html#af467ffc09255c88c0e2b8bd35318f589" title="Is there new time data available. " alt="" coords="364,49,553,90"/>
+</map>

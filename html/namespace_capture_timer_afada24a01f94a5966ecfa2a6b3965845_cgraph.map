@@ -1,0 +1,4 @@
+<map id="CaptureTimer::isrTick_timer" name="CaptureTimer::isrTick_timer">
+<area shape="rect" id="node2" href="$namespace_capture_timer.html#af22820656100be1bf4327007f2b25356" title="Check &amp; perform period stretching if needed. " alt="" coords="209,5,395,32"/>
+<area shape="rect" id="node3" href="$namespace_capture_timer.html#aa1f60f51fcce98e1df6f9b6f197402b7" title="Tick trigger interrupt handler &#160;Tick trigger interrupt handler. " alt="" coords="224,57,380,98"/>
+</map>

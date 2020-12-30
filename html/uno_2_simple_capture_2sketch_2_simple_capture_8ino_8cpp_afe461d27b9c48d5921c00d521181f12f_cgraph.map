@@ -1,0 +1,7 @@
+<map id="loop" name="loop">
+<area shape="rect" id="node2" href="$leonardo_2_simple_capture_2sketch_2_simple_capture_8ino_8cpp.html#abced3065b215a839c63a921b3fa51728" title="tickGenerator" alt="" coords="131,5,240,32"/>
+<area shape="rect" id="node3" href="$namespace_capture_timer.html#ac6aa51e7e5713c83fe55ab7acfd133ad" title="Get ticks count (with dataReady flag set up) " alt="" coords="337,56,507,83"/>
+<area shape="rect" id="node5" href="$namespace_capture_timer.html#a25b3fb372fec1a6e90d3b1e93b36c234" title="Get Frequency (with dataReady flag set up) " alt="" coords="103,107,268,133"/>
+<area shape="rect" id="node4" href="$namespace_capture_timer.html#a88b6925dca4cdd5e3d6e6f6f5d83eb16" title="Is there new ticks data available. " alt="" coords="576,74,765,115"/>
+<area shape="rect" id="node6" href="$namespace_capture_timer.html#a9b3f39de56a55a0ae5eaccf5b1113e20" title="Get ticks count SCALED (with dataReady flag set up) " alt="" coords="316,107,528,133"/>
+</map>
