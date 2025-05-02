@@ -1,4 +1,4 @@
-# CaptureTimer
+# CaptureTimer [![CodeFactor](https://www.codefactor.io/repository/github/smfsw/capturetimer/badge)](https://www.codefactor.io/repository/github/smfsw/capturetimer)
 
 Arduino Input Capture Library
 
